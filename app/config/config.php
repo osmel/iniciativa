@@ -14,7 +14,7 @@
 | path to your installation.
 |
 */
-$config['base_url']	= 'http://iniciativatextil.dev.com';
+$config['base_url']	= 'http://tienda_iniciativa.dev.com';
 
 /*
 |--------------------------------------------------------------------------
