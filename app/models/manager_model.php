@@ -34,6 +34,62 @@ class Manager_model extends CI_Model {
             }
         }
 
+
+
+        public function eliminar_imagen($data) {
+            
+            $this->db->select('m.galeria_producto, m.pid');
+            $this->db->from($this->db->dbprefix('catalogo_productos'). ' AS m');
+            $where = '(
+                          (m.puid = "'.$data["puid"].'")
+                         
+            )'; 
+
+            $this->db->where($where);  
+            
+            $result = $this->db->get();
+        
+            if ( $result->num_rows() > 0 ) {
+                //return json_decode($result->row()->galeria_producto);
+                $arreglo= json_decode($result->row()->galeria_producto);
+                $arr = array();
+                $si = true;
+                foreach ($arreglo as $key => $value) {
+                    foreach ($value as $key1 => $value1) {
+                         if ($value1==$data['img']) {
+                            $si=false;
+                         }
+                         
+
+                    }   
+                        
+                    if ($si) $arr[]=$value;     
+                    $si=true;  
+                }
+
+                $this->db->set('galeria_producto', json_encode($arr) );
+                $this->db->where($where);  
+                $this->db->update($this->db->dbprefix('catalogo_productos'). ' AS m');
+
+
+                //return json_encode($arr);
+
+                $this->db->cache_delete_all();
+                if ($this->db->affected_rows() > 0)
+                    return json_encode($arr);
+                else
+                    return FALSE;
+
+
+                 
+            }               
+            else
+               return False;
+            $result->free_result();
+
+        }
+
+
         public function total_productos( $search ) {
             $this->db->cache_off();
             $this->db->from( $this->db->dbprefix( 'catalogo_productos' ) . ' AS a' );
@@ -79,6 +135,7 @@ class Manager_model extends CI_Model {
             }else{
                 $total_rows = $this->db->count_all('catalogo_productos');
                 return $total_rows;
+
             }
         }
 	public function evaluacion( $puid, $cat ) {
@@ -96,6 +153,7 @@ class Manager_model extends CI_Model {
             else
                 return FALSE;
         }
+        
 
         public function total_categorias_admin() {
             $this->db->cache_on();
@@ -343,6 +401,44 @@ class Manager_model extends CI_Model {
             $lista->free_result();
         }
 
+        //hago este conteo para mostrar la subcategoría aquellos q se repiten
+          public function lista_conteo_categorias($parent, $nombre) {
+            $this->db->cache_on();
+            $this->db->select('cid');
+            $this->db->where('parent', $parent);
+            $this->db->order_by('orden_categoria', 'ASC');
+            $lista = $this->db->get($this->db->dbprefix('catalogo_categorias'));
+            
+            $arreglo= $lista->result_array();
+
+            $arr = array();
+            foreach ($lista->result_array() as $row)    {
+                $arr[] = $row['cid'];
+            }   
+            $cadena= '('.implode(",",$arr).')';
+            //return $cadena;
+
+            //
+            $this->db->cache_on();
+            $this->db->select('cid');
+
+            $where = '(
+                          (parent in '.$cadena.') AND (nombre_categoria = "'.$nombre.'" )
+                                    
+                            
+               )'; 
+            $this->db->where($where);
+            $this->db->order_by('orden_categoria', 'ASC');
+            $this->db->from($this->db->dbprefix('catalogo_categorias'));
+
+            $filas = $this->db->count_all_results();
+            return $filas;
+
+
+            $lista->free_result();
+        }
+
+
         public function lista_colores($limit, $start) {
             $this->db->cache_on();
             if ($limit == 0 && $start == 0) {
@@ -393,26 +489,60 @@ class Manager_model extends CI_Model {
             $this->db->cache_on();
             $this->db->select('a.pid, a.puid, nombre_producto, slug_producto, descripcion_producto, 
 					precio_metro, precio_rollo, colores_producto, modelo_producto, slug_modelo_producto, b.cid, 
-                    b.nombre_categoria, b.slug_categoria, imagen_producto, thumbs_producto, tipo_producto');
+                    b.nombre_categoria, b.slug_categoria, imagen_producto, thumbs_producto, tipo_producto, b.parent');
+
+            //$this->db->select('CONCAT(b.nombre_categoria,b.cid) as CONCAT("osmel",b.cid)', FALSE);
+
+            //$this->db->select("( CASE WHEN b.cid = 40 THEN b.nombre_categoria ELSE 0 END ) AS metros"); 
+
+            //$this->db->select('CONCAT(b.nombre_categoria,b.cid) as CONCAT("osmel",b.cid)', FALSE);
+
+            //$this->db->select("SUM((id_medida =1) * cantidad_um) as metros"); 
+
             $this->db->from($this->db->dbprefix('catalogo_productos'). ' AS a');
             $this->db->join($this->db->dbprefix('productos_categorias'). ' AS m', 'm.puid = a.puid','INNER');
             $this->db->join($this->db->dbprefix('catalogo_categorias'). ' AS b', 'b.cid = m.cid','INNER');
+            //$this->db->join($this->db->dbprefix('catalogo_categorias'). ' AS d', 'd.cid = m.cid','LEFT');
             // $this->db->where('b.status_categoria', 1);
             // $this->db->where('a.status_producto', 1);
             // $this->db->where('b.cid', $cat->cid);
             $where = '(
                          ( (b.status_categoria=1) AND (a.status_producto=1) AND (b.cid = '.$cat->cid.')
-                                    
                             )                                
-                                                   
+                                                                       
                           
                )'; 
             $this->db->where($where);  
             $this->db->order_by('a.pid', 'ASC');
             $this->db->limit($limit, $start);
             $listado_productos = $this->db->get();
-            if ($listado_productos->num_rows() > 0)
+            if ($listado_productos->num_rows() > 0) {
+                foreach ($listado_productos->result() as $key => $value) {
+                    $value->composicion = self::composicion_productos($value->puid)->nombre_categoria;
+                }
+
                 return $listado_productos->result();
+            } else
+                return NULL;
+            $listado_productos->free_result();
+        }
+
+
+          public function composicion_productos($puid) {
+            $this->db->cache_on();
+            $this->db->select('b.nombre_categoria, b.parent');
+
+            $this->db->from($this->db->dbprefix('productos_categorias'). ' AS m');
+            $this->db->join($this->db->dbprefix('catalogo_categorias'). ' AS b', 'b.cid = m.cid AND  b.parent=13','INNER');
+            $where = '(
+                         ( (b.status_categoria=1)  AND (m.puid = "'.$puid.'")
+                            )                                
+               )'; 
+            $this->db->where($where);  
+            //$this->db->order_by('a.pid', 'ASC');
+            $listado_productos = $this->db->get();
+            if ($listado_productos->num_rows() > 0)
+                return $listado_productos->row();
             else
                 return NULL;
             $listado_productos->free_result();

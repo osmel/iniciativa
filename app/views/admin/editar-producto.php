@@ -1,4 +1,10 @@
 <?php $this->load->view('admin/header'); ?>
+
+
+    
+
+
+
 <script type="text/javascript">
     tinymce.init({
         selector: "textarea#descripcion_producto",
@@ -13,6 +19,43 @@
         force_p_newlines: false
     });
     $(document).ready(function() {
+
+
+
+            jQuery('body').on('click','.plupload_file_action', function (e) {
+               
+                var mio= $(this);
+
+                if (confirm('Quieres eliminar la imagen?'))  {
+                        
+                        jQuery.ajax({
+                                    url : '/modal_eliminar',
+                                    data:{
+                                        puid:$(this).attr('pid'),
+                                        img:$(this).attr('img'),
+                                    },
+                                    type : 'POST',
+                                    dataType : 'json',
+                                    success : function(midata) {
+                                        
+                                        mio.parent().css('display','none');
+                                       
+                                    }
+                        });
+
+                }        
+                
+            });
+
+
+
+
+
+      
+            
+
+
+
         mostrarColores(null, "#");
         var alfabeto = "#ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
         for (var i = 0; i < alfabeto.length; i++) {
@@ -161,13 +204,20 @@
             </span>
             <em>Esta informaci&oacute;n aparecer&aacute; en el detalle del producto.</em>
         </span>
-        <span class="mini-bloque">
+        <span class="mini-bloque1" >
             <?php
             if ($producto->galeria_producto) {
                 $galeria = json_decode($producto->galeria_producto);
                 foreach ($galeria as $image) {
                     ?>
-                    <img border="0" src="<?php echo base_url() . 'uploads/galerias/' . get_image_gallery($image, 80); ?>" />
+                    <div  pid="<?php echo $this->input->get('pid'); ?>" style="position:relative; display: inline-block;" >
+                            
+                        <img style="position:relative; " border="0" src="<?php echo base_url() . 'uploads/galerias/' . get_image_gallery($image, 80); ?>" />
+                                       
+                        <div pid="<?php echo $this->input->get('pid'); ?>" hash="<?php echo $this->input->get('hash'); ?>" img="<?php echo get_image_gallery($image, 80); ?>" style="z-index:1000; position: absolute;top: 0; right: 0;"  class="plupload_file_action"><div class="plupload_action_icon ui-icon ui-icon-circle-minus"> </div></div>
+                    </div>
+
+
                     <?php
                 }
             }
@@ -223,3 +273,9 @@
     </div>
 </div>
 <?php $this->load->view('admin/footer'); ?>
+
+<div class="modal fade bs-example-modal-lg" id="modalMessage" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" style="margin-top:150px !important">
+        <div class="modal-content" ></div>
+    </div>
+</div>  

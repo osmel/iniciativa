@@ -12,10 +12,11 @@
             </div>
             <div class="col-md-12 gnral" style="margin-top:20px !important;">
                     <?php
+                    //print_r($productos);die;
                     if ($productos) {
                         foreach ($productos as $producto) {
                             ?>
-                            <?php if ($producto->cid != 0) { ?>
+                            <?php if (($producto->cid != 0) ) { ?>
                                 <div class="col-xs-6 col-sm-6 col-md-3 col-lg-3 col-xl-3">
                                 <span class="producto" id="producto_<?php echo $producto->pid; ?>">
                                     <?php
@@ -38,9 +39,9 @@
                                     <?php } ?>
                                     <h3 class="grid_titulo"><?php echo $producto->nombre_producto; ?></h3>
                                     <?php if ($producto->modelo_producto) : ?><h4 class="grid_modelo"><?php echo strtoupper($producto->modelo_producto); ?></h4><?php endif; ?>
-                                    <p class="grid_descripcion"><?php echo $producto->nombre_categoria; ?></p>
+                                    <p class="grid_descripcion"><?php echo $producto->composicion; ?></p>
                                     <?php if($producto->precio_metro != 0) { ?>
-                                        <p class="grid_precio">$<?php echo $producto->precio_metro; ?></p>
+                                        <p class="grid_precio osmel">$<?php echo $producto->precio_metro; ?></p>
                                     <?php } else { ?>
                                         <p class="grid_precio">$<?php echo $producto->precio_rollo; ?></p>
                                     <?php } ?>

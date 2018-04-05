@@ -431,6 +431,8 @@ class Manager extends CI_Controller {
             $tamanos = array();
             $rutas = array();
 
+
+
             foreach ($configs as $config) {
                 $this->image_lib->thumb($config, FCPATH . 'uploads/banners/');
                 array_push($tamanos, $config['width']);
@@ -460,6 +462,13 @@ class Manager extends CI_Controller {
         }
     }
 
+
+    
+
+ 
+
+
+
     public function editar_producto() {
         if ($this->encrypt->sha1($this->input->get('pid')) == $this->input->get('hash')) {
             $producto = $this->manager->atributos_producto($this->input->get('pid'));
@@ -475,6 +484,15 @@ class Manager extends CI_Controller {
             redirect('admin/index');
         }
     }
+
+    public function modal_eliminar() {
+            $data['img'] = ($this->input->post('img')); 
+            $data['puid'] = ($this->input->post('puid')); 
+            $data['datos'] = $this->manager->eliminar_imagen($data);
+            echo ($data['datos']);
+    }    
+
+
 
     public function editar_banner() {
         if ($this->encrypt->sha1($this->input->get('buid')) == $this->input->get('hash')) {

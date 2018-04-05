@@ -552,7 +552,7 @@ function publicarProducto(puid, status, opts, target){
   $('#foo').css('display','block');
   var spinner = new Spinner(opts).spin(target);
   $.ajax({
-    url: 'http://iniciativatextil.com/manager/activar_producto',
+    url: '/manager/activar_producto',
     type: 'post',
     data: {
       product_uid: puid,

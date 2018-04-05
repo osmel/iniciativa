@@ -46,6 +46,10 @@ $route['login'] 							= 	"manager/login";
 $route['logout'] 							= 	"manager/logout";
 $route['admin'] 							= 	"manager/index";
 $route['admin/(:any)'] 						= 	"manager/$1";
+
+$route['modal_eliminar'] 						= 	"manager/modal_eliminar";
+
+
 $route['home'] 								= 	"home/index";
 $route['ventas'] 							= 	"home/ventas";
 $route['nosotros'] 							= 	"home/nosotros";

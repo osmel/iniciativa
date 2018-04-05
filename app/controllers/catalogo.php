@@ -1,6 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Catalogo extends CI_Controller {
+class Catalogo extends CI_Controller { 
 
 	private $main_menu;
 	private $footer_menu;
